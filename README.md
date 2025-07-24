@@ -20,9 +20,3 @@ cd mamba
 pip install -e
 ```
 
-3) Install mamba_ssm
-
-```shell
-pip install mamba-ssm
-```
-
