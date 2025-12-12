@@ -3,6 +3,10 @@
 ## Recommended to run in colab or in an isolated python environment
 
 1) Clone the repository
+``` shell
+git clone git@github.com:denzel-robin/StockMamba.git
+cd StockMamba
+```
 2) Create an isolated python environment
 ``` shell
 python -m venv venv
@@ -11,15 +15,10 @@ python -m venv venv
 ``` shell
 source venv/bin/activate.fish
 ```
-*Note: activate file is different for each shell.*
-4) Install the dependencies
-3) Clo
+**Note: activate file is different for each shell.**
+
+4) Install the dependencies from requirement.txt
+5) Run main.py file
 ``` shell
-git clone https://github.com/state-spaces/mamba.git
-cd mamba
+python main.py
 ```
-
-```shell
-pip install -e
-```
-
