@@ -1,1 +1,3 @@
-mamba-ssm
+yfinance
+torch
+einops

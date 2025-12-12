@@ -1,54 +1,48 @@
-import pandas as pd
+import torch.utils.data as utils
 import numpy as np
 import torch
 
-df = pd.read_csv("dataset.csv")
-df = df[["ticker" ,"date", "open", "high", "low", "close"]].copy()
+def PrepareDataset(historical_data, BATCH_SIZE=48, seq_len=12, pred_len=12, train_propotion=0.7, valid_propotion=0.1):
+    time_len = historical_data.shape[0]
 
-# convert ticker to integer
-
-ticker_id, unique_tickers = pd.factorize(df["ticker"])
-df['ticker'] = ticker_id
-
-# convert dates to integer(ordinal)
-
-df["date"] = pd.to_datetime(df["date"])
-df["date"] = df["date"].apply(lambda x: x.toordinal()).values
-
-df_array = df.to_numpy()
-
-grouped = [group.iloc[:227].to_numpy() for _, group in df.groupby("ticker")]
-df_div = np.stack(grouped)
-
-X = [[[] for _ in range(227)] for _ in range(47)]
-Y = [[[] for _ in range(227)] for _ in range(47)]
-
-for i in range(47):
-    for j in range(227):
-        row = df_div[i][j]
-        X[i][j].append([row[0], row[1]])
-        Y[i][j].append([row[2], row[3], row[4], row[5]])
-X = np.array(X).squeeze()
-Y = np.array(Y).squeeze()
-
-x_train, y_train = [],[]
-x_test, y_test = [],[]
-
-for i in range(47):
-  split = int(len(X[i])*0.8)
-  x_train.append(X[i][:split])
-  y_train.append(Y[i][:split])
-  x_test.append(X[i][split:])
-  y_test.append(Y[i][split:])
-
-x_train = np.array(x_train)
-y_train = np.array(y_train)
-x_test = np.array(x_test)
-y_test = np.array(y_test)
-
-x_train = torch.tensor(x_train).float()
-y_train = torch.tensor(y_train).float()
-x_test = torch.tensor(x_test).float()
-y_test = torch.tensor(y_test).float()
+    # MinMax Normalization Method.
+    for col in historical_data.columns:
+      col_max = historical_data[col].max()
+      col_min = historical_data[col].min()
+      historical_data[col] = (historical_data[col] - col_min) / (col_max - col_min)
 
 
+    price_sequences, price_labels = [], []
+    for i in range(time_len - seq_len - pred_len):
+        price_sequences.append(historical_data.iloc[i:i + seq_len].values)
+        price_labels.append(historical_data.iloc[i + seq_len:i + seq_len + pred_len].values)
+    price_sequences, price_labels = np.asarray(price_sequences), np.asarray(price_labels)
+
+    # Reshape labels to have the same second dimension as the sequences
+    price_labels = price_labels.reshape(price_labels.shape[0], seq_len, -1)
+
+    # shuffle & split the dataset to training and testing sets
+    sample_size = price_sequences.shape[0]
+    index = np.arange(sample_size, dtype=int)
+    np.random.shuffle(index)
+
+    train_index = int(np.floor(sample_size * train_propotion))
+    valid_index = int(np.floor(sample_size * (train_propotion + valid_propotion)))
+
+    train_data, train_label = price_sequences[:train_index], price_labels[:train_index]
+    valid_data, valid_label = price_sequences[train_index:valid_index], price_labels[train_index:valid_index]
+    test_data, test_label = price_sequences[valid_index:], price_labels[valid_index:]
+
+    train_data, train_label = torch.Tensor(train_data), torch.Tensor(train_label)
+    valid_data, valid_label = torch.Tensor(valid_data), torch.Tensor(valid_label)
+    test_data, test_label = torch.Tensor(test_data), torch.Tensor(test_label)
+
+    train_dataset = utils.TensorDataset(train_data, train_label)
+    valid_dataset = utils.TensorDataset(valid_data, valid_label)
+    test_dataset = utils.TensorDataset(test_data, test_label)
+
+    train_dataloader = utils.DataLoader(train_dataset, batch_size=BATCH_SIZE, shuffle=True, drop_last=True)
+    valid_dataloader = utils.DataLoader(valid_dataset, batch_size=BATCH_SIZE, shuffle=True, drop_last=True)
+    test_dataloader = utils.DataLoader(test_dataset, batch_size=BATCH_SIZE, shuffle=True, drop_last=True)
+
+    return train_dataloader, valid_dataloader, test_dataloader
