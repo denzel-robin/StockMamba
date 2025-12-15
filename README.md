@@ -29,7 +29,7 @@ You can read more about this model here: <https://arxiv.org/abs/2312.00752>
 1. Clone the repository.
 
      ``` shell
-     git clone git@github.com:denzel-robin/StockMamba.git
+     git clone https://github.com/denzel-robin/StockMamba.git
      cd StockMamba
      ```
 
