@@ -1,4 +1,5 @@
 # StockMamba
+StockMamba is a stock price forecasting model developed using Mamba architecture. A Mamba model is a state space model suitable for doing temporal forcasting.:wq
 
 ## Recommended to run in colab or in an isolated python environment
 
