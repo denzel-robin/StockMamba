@@ -2,7 +2,13 @@
 # StockMamba
 
 StockMamba is a stock price forecasting model developed using Mamba architecture.
-A Mamba model is a state space model suitable for doing temporal forcasting.
+A Mamba model is a state space model suitable for doing temporal forecasting.
+The Mamba model can perform these tasks in linear time complexity
+while it's equivalent transformer model takes quadratic time complexity.
+It can performs in such low time complexity because of the technology
+it uses called Selective State Space Scan.
+
+You can read more about this model here: <https://arxiv.org/abs/2312.00752>
 
 ## Recommended to run in colab or in an isolated python environment
 
